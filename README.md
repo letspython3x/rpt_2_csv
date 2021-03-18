@@ -3,7 +3,7 @@ RPT files are converted to CSV files.
 
 
 # Install Python
-Install Python from (link)[https://www.python.org/downloads/release/python-392/]
+Install Python from [link](https://www.python.org/downloads/release/python-392/)
 
 # Usage
 
