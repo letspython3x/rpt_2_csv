@@ -3,20 +3,20 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 
-DEFAULT_OUTPUT_DIR = "./rpt2csvFiles"
 spaces_2 = "  "
+VALID_EXT = ["rpt", "txt"]
 
 
 class Rpt2Csv:
     """
     RPT 2 CSV files.
     """
-    def __init__(self, inputDir, outputDir=None):
-        self.inputDir = inputDir
-        self.outputDir = outputDir or DEFAULT_OUTPUT_DIR
 
-    @staticmethod
-    def parse_filedata(lines):
+    def __init__(self, inputDir, outputDir):
+        self.inputDir = inputDir
+        self.outputDir = outputDir
+
+    def parse_filedata(self, lines):
         """
         returns a list of lists after splitting lines on the delimiters
         viz: |, spaces_2
@@ -33,10 +33,25 @@ class Rpt2Csv:
             line_data = [datum.strip() for datum in line_data if datum.strip()]
             data = line_data or line
             if data:
+                data = self.split_row_by_text(data, text='dr')
+                data = self.split_row_by_text(data, text='cr')
                 rows.append(data)
         return rows
 
+    def split_row_by_text(self, row, text):
+        if not isinstance(row, list):
+            return row
+        text = text.lower()
+        myRow = row.copy()
+        for pos, item in enumerate(myRow):
+            # print(item)
+            if text and item.lower().endswith(text) and item.lower() != text:
+                row[pos] = item.lower().split(text)[0]
+                row.insert(pos + 1, text)
+        return row
+
     def check_out_dir(self):
+        """Checks nd create the output directory if doesn't exists"""
         Path(self.outputDir).mkdir(parents=True, exist_ok=True)
 
     def write_to_csv(self, filename, rows):
@@ -52,7 +67,7 @@ class Rpt2Csv:
         with open(outputFile, 'w') as fout:
             writer = csv.writer(fout, delimiter=',')
             writer.writerows(rows)
-        print(f">>> CSV file created: {outputFile}")
+        print(f"\t CSV file created: {outputFile}")
 
     def execute(self):
         """
@@ -65,10 +80,11 @@ class Rpt2Csv:
         reqFiles = [(filename, os.path.join(root, filename))
                     for root, _, files in os.walk(self.inputDir)
                     for filename in files
-                    if filename.lower().endswith('rpt')]
+                    if filename.lower()[-3:] in VALID_EXT]
+        # print(reqFiles)
 
-        for filename, filepath in reqFiles:
-            print(f"Working on filename: {filepath}")
+        for pos, (filename, filepath) in enumerate(reqFiles):
+            print(f"{pos + 1}) Input filename: {filepath}")
             with open(filepath, encoding='utf-8-sig') as fin:
                 reader = fin.readlines()
                 # Remove Unwanted Lines
@@ -84,10 +100,11 @@ def parse_cmdline():
     :return: user arguments
     """
     parser = ArgumentParser(description='Convert RPT files to CSV.')
-    parser.add_argument('inputDir',
+    parser.add_argument('-ip', '--inputDir', default="./finacleFiles",
                         help="Input folder path for RPT files.")
 
     parser.add_argument('-op', '--outputDir', dest='outputDir',
+                        default="./finacle2csvFiles",
                         help="Optional Output folder path for CSV files.")
 
     args = parser.parse_args()
