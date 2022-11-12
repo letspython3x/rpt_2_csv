@@ -16,4 +16,4 @@ Install Python from [link](https://www.python.org/downloads/release/python-392/)
 
 
 ### provide input directory for rpt files and output directory for csv files.
-`python3 rpt2csv.py --inputDir path/to/rptfiles` --outputDir path/to/csvOutputfiles`
+`python3 rpt2csv.py --inputDir path/to/rptfiles --outputDir path/to/csvOutputfiles`
